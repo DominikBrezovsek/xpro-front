@@ -1,0 +1,24 @@
+{
+  "loginHello": "Dobrodošli nazaj",
+  "username": "Uporabniško ime",
+  "password": "Geslo",
+  "rememberMe": "Zapomni si me",
+  "forgottenPassword": "Pozabljeno geslo?",
+  "signIn": "Prijavi se",
+  "redirectedToLoginTitle": "Ponovna prijava",
+  "redirectedToLoginDesc": "Za nadaljevanje se morate prijaviti.",
+  "navbarSettingsLabel": "Nastavitve",
+  "navbarMyHoursLabel": "Pregled mojih ur",
+  "navbarCurrentDayLabel": "Tekoči delovni dan",
+  "navbarLogoutLabel": "Odjava",
+  "logoutConfirmHeader": "Potrditev odjave",
+  "logoutConfirmMessage": "Se želite odjaviti iz aplikacije?",
+  "loginErrorHeader": "Prijava neuspešna",
+  "loginErrorMessage": "Napačno uporabniško ime ali geslo",
+  "loginEmptyFieldHeader": "Manjkajoči podatki",
+  "loginEmptyFieldMessage": "Izpolnjena morajo biti vsa polja.",
+  "acceptLabel": "Potrdi",
+  "cancelLabel": "Prekliči",
+  "navbarLoggedInAs": "Prijavljen uporabnik:"
+
+}

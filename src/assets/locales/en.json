@@ -1,0 +1,24 @@
+{
+  "loginHello": "Welcome back",
+  "username": "Username",
+  "password": "Password",
+  "rememberMe": "Remember me",
+  "forgottenPassword": "Forgot password?",
+  "signIn": "Sign In",
+  "redirectedToLoginTitle": "Login",
+  "redirectedToLoginDesc": "Please log in to continue",
+  "navbarSettingsLabel": "Settings",
+  "navbarMyHoursLabel": "Total work hours",
+  "navbarCurrentDayLabel": "Current work day",
+  "navbarLogoutLabel": "Logout",
+  "logoutConfirmHeader": "Confirm logout",
+  "logoutConfirmMessage": "Do you want to logout?",
+  "loginErrorHeader": "Login failed",
+  "loginErrorMessage": "Username or password incorrect.",
+  "loginEmptyFieldHeader": "Missing values",
+  "loginEmptyFieldMessage": "All input fields are required.",
+  "acceptLabel": "Confirm",
+  "cancelLabel": "Cancel",
+  "navbarLoggedInAs": "Logged in as:"
+
+}
