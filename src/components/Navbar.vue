@@ -24,31 +24,43 @@
         </router-link>
       </template>
       <template #end>
-        <button class="relative overflow-hidden w-full border-0 bg-transparent flex items-center p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 gap-1">
-          <Avatar image="https://seccdn.libravatar.org/avatar/296caabbe9e8c950a0143257243da6ed?s=512&d=retro" size="large" shape="square"  />
-        <span class="relative overflow-hidden w-full border-0 bg-transparent flex  flex-col items-start p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 gap-1">
-          <span>{{t('navbarLoggedInAs')}}</span>
+        <span class="relative overflow-hidden w-full border-0 bg-transparent flex items-center p-2 pl-4 gap-1">
+          <Avatar image="https://seccdn.libravatar.org/avatar/296caabbe9e8c950a0143257243da6ed?s=512&d=retro"
+                  size="large" shape="square"/>
+        <span class="relative overflow-hidden w-full border-0 bg-transparent flex  flex-col items-start p-2 pl-4 gap-1">
+          <span>{{ t('navbarLoggedInAs') }}</span>
           <span class="inline-flex items-center gap-2">
-                <span class="font-bold">{{name}}</span>
-                <span class="font-bold">{{surname}}</span>
+                <span class="font-bold">{{ name }}</span>
+                <span class="font-bold">{{ surname }}</span>
             </span>
         </span>
-        </button>
+        </span>
+        <div
+            class="theme-toggler mt-4 flex gap-2 items-center justify-evenly p-2 pl-4 border border-primary w-10/12 m-auto rounded-md">
+          <Button @click="changeMode('light')" :severity="lightMode"><i class="pi pi-sun !text-lg"></i></Button>
+          <Button @click="changeMode('system')" :severity="system"><i class="pi pi-desktop !text-lg"></i></Button>
+          <Button @click="changeMode('dark')" :severity="darkMode"><i class="pi pi-moon !text-lg"></i></Button>
+
+        </div>
       </template>
     </Menu>
 
   </div>
 </template>
 <script setup>
-import { Menu, useConfirm, ConfirmDialog, Avatar} from "primevue";
+import {Menu, useConfirm, ConfirmDialog, Avatar, Button} from "primevue";
 import {useI18n} from "vue-i18n";
 import router from "@/router/index.js";
 import axios from "axios";
-import {onBeforeMount, onMounted, onUpdated, ref} from "vue";
+import {onMounted, ref} from "vue";
+
 let name = ref('');
 let surname = ref('');
 const {t} = useI18n();
 const confirm = useConfirm();
+const lightMode = ref('secondary');
+const darkMode = ref('secondary');
+const system = ref('primary');
 
 let items = [
   {
@@ -105,6 +117,7 @@ function confirmAction(label) {
     }
   }
 }
+
 function loadData() {
   const loginUrl = "http://localhost:5064/api/User/GetUser";
   const data = new FormData();
@@ -121,10 +134,17 @@ function loadData() {
     name.value = response.data.name;
     surname.value = response.data.surname;
   }).catch((error) => {
-    console.log(error);
+    if (error.status === 401) {
+      sessionStorage.removeItem("userId");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("isAuthenticated");
+      sessionStorage.setItem("redirectedToLogin", "true");
+      router.push("/");
+    }
   });
 }
-function checkLoginStatus(){
+
+function checkLoginStatus() {
   const isAuthenticated = sessionStorage.getItem("isAuthenticated");
   const token = sessionStorage.getItem("token");
   if (isAuthenticated !== "true" || token === undefined) {
@@ -136,9 +156,69 @@ function checkLoginStatus(){
   }
   return true;
 }
+
+function changeMode(mode) {
+  switch (mode) {
+    case "dark":
+      localStorage.setItem("colorMode", "dark");
+      loadMode();
+      break;
+    case "system":
+      localStorage.setItem("colorMode", "system");
+      loadMode();
+      break;
+    case "light":
+      localStorage.setItem("colorMode", "light");
+      loadMode();
+      break;
+    default:
+      localStorage.setItem("colorMode", "system");
+      loadMode();
+      break;
+  }
+}
+
+function loadMode() {
+  const mode = localStorage.getItem("colorMode");
+  switch (mode) {
+    case "dark":
+      darkMode.value = "primary";
+      system.value = "secondary";
+      lightMode.value = "secondary";
+      if (!document.documentElement.classList.contains("darkMode")) {
+        document.documentElement.classList.add('darkMode');
+      }
+      break;
+    case "system":
+      system.value = "primary";
+      lightMode.value = "secondary";
+      darkMode.value = "secondary";
+      const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)");
+        if (systemIsDark.matches) {
+          if (!document.documentElement.classList.contains('darkMode')) {
+            document.documentElement.classList.add('darkMode');
+          }
+        } else {
+          if (document.documentElement.classList.contains('darkMode')) {
+            document.documentElement.classList.remove('darkMode');
+          }
+        }
+      break;
+    case "light":
+      lightMode.value = "primary";
+      darkMode.value = "secondary";
+      system.value = "secondary";
+      if (document.documentElement.classList.contains('darkMode')) {
+        document.documentElement.classList.remove('darkMode');
+      }
+      break;
+  }
+}
+
 onMounted(() => {
   if (checkLoginStatus()) {
+    loadMode();
     loadData();
   }
-})
+});
 </script>

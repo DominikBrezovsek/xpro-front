@@ -14,11 +14,13 @@
   "logoutConfirmHeader": "Confirm logout",
   "logoutConfirmMessage": "Do you want to logout?",
   "loginErrorHeader": "Login failed",
-  "loginErrorMessage": "Username or password incorrect.",
+  "loginErrorMessage": "Server failed to respond. Error code: {0}",
+  "loginUserErrorHeader": "Login failed",
+  "loginUserErrorMessage": "Username or password incorrect.",
   "loginEmptyFieldHeader": "Missing values",
   "loginEmptyFieldMessage": "All input fields are required.",
   "acceptLabel": "Confirm",
   "cancelLabel": "Cancel",
-  "navbarLoggedInAs": "Logged in as:"
-
+  "navbarLoggedInAs": "Logged in as:",
+  "dashboardLocale": "en-US"
 }

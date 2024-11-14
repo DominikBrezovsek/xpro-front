@@ -13,12 +13,28 @@
   "navbarLogoutLabel": "Odjava",
   "logoutConfirmHeader": "Potrditev odjave",
   "logoutConfirmMessage": "Se želite odjaviti iz aplikacije?",
+  "loginUserErrorHeader": "Prijava neuspešna",
+  "loginUserErrorMessage": "Napačno uporabniško ime ali geslo",
   "loginErrorHeader": "Prijava neuspešna",
-  "loginErrorMessage": "Napačno uporabniško ime ali geslo",
+  "loginErrorMessage": "Prišlo je do napake na strežniku. Opis napake: {0}",
   "loginEmptyFieldHeader": "Manjkajoči podatki",
   "loginEmptyFieldMessage": "Izpolnjena morajo biti vsa polja.",
   "acceptLabel": "Potrdi",
+  "saveLabel": "Shrani",
   "cancelLabel": "Prekliči",
-  "navbarLoggedInAs": "Prijavljen uporabnik:"
+  "navbarLoggedInAs": "Prijavljen uporabnik:",
+  "dashboardLocale": "sl-SI",
+  "dashboardWorkDay": "Delovni čas za:",
+  "dashboardArrString": "Čas prihoda:",
+  "dashboardDeptString": "Čas odhoda:",
+  "dashboardBreakString": "Malica:",
+  "dashboardHoursInHeaderString": "Vnos prihoda",
+  "dashboardHoursInDescString": "Vnesite uro prihoda v službo.",
+  "dashboardHourOutHeaderString": "Vnos odhoda",
+  "dashboardHourOutDescString": "Vnesite uro odhoda iz službe",
+  "dashboardHoursBreakHeaderString": "Vnos malice",
+  "dashboardHoursBreakStartDescString": "Vnesite uro začetka malice",
+  "dashboardHoursBreakEndDescString": "Vnesite uro konca malice"
+
 
 }

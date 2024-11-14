@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-surface-50 dark:bg-surface-950 px-6 py-20 md:px-12 lg:px-20 login">
+  <div class="px-6 py-20 md:px-12 lg:px-20 login">
   <Toast ref="toast"/>
-    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border w-full lg:w-6/12 mx-auto">
+    <div class="p-6 shadow shadow-primary rounded-border w-full lg:w-6/12 mx-auto">
       <div class="text-center mb-8">
-        <svg class="mb-4 mx-auto fill-surface-600 dark:fill-surface-200 h-16" viewBox="0 0 30 32" fill="none"
+        <svg class="mb-4 mx-auto fill-primary-emphasis-alt h-16" viewBox="0 0 30 32" fill="none"
              xmlns="http://www.w3.org/2000/svg">
           <path
               fill-rule="evenodd"
@@ -12,15 +12,15 @@
           />
         </svg>
 
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('loginHello') }}</div>
+        <div class="text-3xl font-medium mb-4">{{ t('loginHello') }}</div>
       </div>
 
       <div>
         <FloatLabel variant="on" class="mb-4">
-          <label for="username" class="text-surface-900 dark:text-surface-0 font-medium mb-2 block">{{
+          <label for="username" class="text-surface-900 font-medium mb-2 block">{{
               t('username')
             }}</label>
-          <InputText id="username" type="text" class="w-full" v-model="username" />
+          <InputText id="username" type="text" class="w-full" v-model="username"/>
         </FloatLabel>
         <FloatLabel variant="on" class="mb-4">
           <label for="password" class="text-surface-900 dark:text-surface-0 font-medium mb-2 block">{{
@@ -35,6 +35,11 @@
         <Button :label="t('signIn')" icon="pi pi-arrow-right" class="w-full" icon-pos="right" @click.native="Login"/>
       </div>
     </div>
+    <div class="mt-4 absolute top-0 right-4 flex gap-2 items-center justify-evenly p-2 border border-primary w-1/12 m-auto rounded-md">
+      <Button @click="changeMode('light')" :severity="lightMode"><i class="pi pi-sun !text-lg"></i></Button>
+      <Button @click="changeMode('system')" :severity="system"><i class="pi pi-desktop !text-lg"></i></Button>
+      <Button @click="changeMode('dark')" :severity="darkMode"><i class="pi pi-moon !text-lg"></i></Button>
+    </div>
   </div>
 </template>
 
@@ -47,6 +52,66 @@ import router from "@/router/index.js";
 const {t} = useI18n()
 let username, password;
 const toast = ref(null);
+const lightMode = ref('secondary');
+const darkMode = ref('secondary');
+const system = ref('primary');
+function changeMode(mode) {
+  switch (mode) {
+    case "dark":
+      localStorage.setItem("colorMode", "dark");
+      loadMode();
+      break;
+    case "system":
+      localStorage.setItem("colorMode", "system");
+      loadMode();
+      break;
+    case "light":
+      localStorage.setItem("colorMode", "light");
+      loadMode();
+      break;
+    default:
+      localStorage.setItem("colorMode", "system");
+      loadMode();
+      break;
+  }
+}
+
+function loadMode() {
+  const mode = localStorage.getItem("colorMode");
+  switch (mode) {
+    case "dark":
+      darkMode.value = "primary";
+      system.value = "secondary";
+      lightMode.value = "secondary";
+      if (!document.documentElement.classList.contains("darkMode")) {
+        document.documentElement.classList.add('darkMode');
+      }
+      break;
+    case "system":
+      system.value = "primary";
+      lightMode.value = "secondary";
+      darkMode.value = "secondary";
+      const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)");
+      if (systemIsDark.matches) {
+        if (!document.documentElement.classList.contains('darkMode')) {
+          document.documentElement.classList.add('darkMode');
+        }
+      } else {
+        if (document.documentElement.classList.contains('darkMode')) {
+          document.documentElement.classList.remove('darkMode');
+        }
+      }
+      break;
+    case "light":
+      lightMode.value = "primary";
+      darkMode.value = "secondary";
+      system.value = "secondary";
+      if (document.documentElement.classList.contains('darkMode')) {
+        document.documentElement.classList.remove('darkMode');
+      }
+      break;
+  }
+}
 
 
 function Login() {
@@ -79,22 +144,30 @@ function Login() {
         sessionStorage.setItem("isAuthenticated", "true");
         sessionStorage.setItem("token", response.data.token);
         router.push('/dashboard');
-      } else {
+      }
+      else {
         toast.value.add({
           severity: "error",
-          summary: t('loginErrorHeader'),
-          detail: t('loginErrorMessage'),
+          summary: t('loginUserErrorHeader'),
+          detail: t('loginUserErrorMessage'),
           closable: true,
           life: 3000
         });
       }
     }).catch((error) => {
-      console.log(error);
+      toast.value.add({
+        severity: "error",
+        summary: t('loginErrorHeader'),
+        detail: t('loginErrorMessage', [error]),
+        closable: true,
+        life: 10000
+      });
     });
   }
 }
 
 onMounted(() => {
+  loadMode();
   if (sessionStorage.getItem("redirectedToLogin") == "true") {
     toast.value.add({
       severity: "warn",
@@ -105,5 +178,8 @@ onMounted(() => {
     });
     sessionStorage.setItem("redirectedToLogin", "false");
   }
+  sessionStorage.removeItem("userId");
+  sessionStorage.removeItem("isAuthenticated");
+  sessionStorage.removeItem("token");
 });
 </script>
