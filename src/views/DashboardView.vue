@@ -11,7 +11,7 @@
           <div class="inline-flex items-center justify-between gap-2">
             <div class="inline-flex items-center justify-start gap-4">
               <i class="pi pi-sign-in"></i>
-              <p>{{ t('dashboardArrString') }} {{arrHour || "Ni podatka"}} </p>
+              <p>{{ t('dashboardArrString') }} {{arrHour || t('noData')}} </p>
             </div>
             <Button :label="t('enterArrival')" icon="pi pi-plus-circle" icon-pos="right" class="w-5/12"
                     @click="showDialog('arrHour')"/>
@@ -19,16 +19,20 @@
           <div class="inline-flex items-center justify-between gap-2">
             <div class="inline-flex items-center justify-start gap-4">
               <i class="pi pi-sign-out"></i>
-              <p>{{ t('dashboardDeptString') }} {{deptHour || "Ni podatka"}} </p>
+              <p>{{ t('dashboardDeptString') }} {{deptHour || t('noData')}} </p>
             </div>
             <Button :label="t('enterDeparture')" icon="pi pi-plus-circle" icon-pos="right" class="w-5/12" @click="showDialog('deptHour')"/>
           </div>
           <div class="inline-flex items-center justify-between gap-2">
             <div class="inline-flex items-center justify-start gap-4">
               <i class="pi pi-bell"></i>
-              <p>{{ t('dashboardBreakString') }} {{breakDuration|| "Ni podatka"}} </p>
+              <p>{{ t('dashboardBreakString') }} {{breakDuration|| t('noData')}} </p>
             </div>
             <Button :label="t('enterBreak')" icon="pi pi-plus-circle" icon-pos="right" class="w-5/12" @click="showDialog('break')"/>
+          </div>
+          <div class="inline-flex items-center justify-between gap-2">
+            <p>{{t('dashboardAbsentString')}} {{absenceType || t('noAbsence')}}</p>
+            <Button :label="t('addAbsence')" icon="pi pi-plus-circle" icon-pos="right" class="w-5/12" @click="showDialog('absence')" />
           </div>
         </div>
       </template>
@@ -82,12 +86,22 @@
         <Button :label=" t('rejectLabel')" icon="pi pi-times" @click="closeDialog('break')"/>
       </div>
     </Dialog>
+    <Dialog :header="t('dashboardHoursInHeaderString')" v-model:visible="showDialogAbsence" modal>
+        <span class="flex flex-col gap-6 p-5">
+          <p>{{ t('dashboardHoursInDescString') }}</p>
+            <Select v-model="selectedAbsence" :options="absences" option-label="absenceName" option-value="absenceId" placeholder="Izberi vrsto odsotnosti" />
+        </span>
+      <div class=" w-full inline-flex items-center justify-between gap-2">
+        <Button :label=" t('saveLabel')" icon="pi pi-save" @click="saveAbsence()"/>
+        <Button :label="t('rejectLabel')" icon="pi pi-times" @click="closeDialog('absence')"/>
+      </div>
+    </Dialog>
   </div>
 
 </template>
 <script setup>
 import Navbar from "@/components/Navbar.vue";
-import {Card, Button, DatePicker, Dialog, Toast} from 'primevue'
+import {Card, Button, DatePicker, Dialog, Toast, Select} from 'primevue'
 import {onMounted, ref, watch} from "vue";
 import axios from "axios";
 import router from "@/router/index.js";
@@ -97,6 +111,7 @@ const {t} = useI18n();
 const showDialogHoursIn = ref(false);
 const showDialogHoursOut = ref(false);
 const showDialogBreak = ref(false);
+const showDialogAbsence = ref(false);
 const arrivalHour = ref();
 const departureHour = ref();
 const toast = ref(null);
@@ -106,6 +121,9 @@ const breakTimeBegin = ref();
 const breakTimeEnd = ref();
 const breakDuration = ref();
 const date = ref();
+const selectedAbsence = ref();
+const absences = ref();
+const absenceType = ref();
 
 
 function getData(){
@@ -123,12 +141,18 @@ function getData(){
       var clockIn = response.data.clockIn;
       var clockOut = response.data.clockOut
       var breakDur = response.data.breakDuration;
-      arrHour.value = clockIn.substring(0, clockIn.lastIndexOf(":"));
+      var absent = response.data.absent;
+      if (clockIn !== null) {
+        arrHour.value = clockIn.substring(0, clockIn.lastIndexOf(":"));
+      }
       if (clockOut != null) {
         deptHour.value = clockOut.substring(0, clockOut.lastIndexOf(":"));
       }
       if (breakDur !== null) {
         breakDuration.value = breakDur.substring(0, breakDur.lastIndexOf(":"));
+      }
+      if (absent === true) {
+        absenceType.value = "Odsoten";
       }
     } else if (response.status === 401) {
       sessionStorage.removeItem("userId");
@@ -146,6 +170,16 @@ function getData(){
       sessionStorage.removeItem("workId");
       sessionStorage.setItem("redirectedToLogin", "true");
       router.push("/");
+    }
+  })
+
+  axios.get("http://localhost:5064/api/Absence/getAbsences").then(response => {
+    absences.value = [];
+    if (response.data !== undefined) {
+      for (var i = 0; i < response.data.length; i++) {
+        absences.value.push(response.data[i]);
+      }
+      console.log(absences.value[0].absenceId)
     }
   })
 }
@@ -210,6 +244,8 @@ function showDialog(dialogName) {
         showDialogBreak.value = true;
       }
       break;
+      case "absence":
+        showDialogAbsence.value = true;
   }
 }
 
@@ -347,7 +383,6 @@ async function saveBreak() {
           "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         }
       }).then(res => {
-        console.log("returned error: " +  res.data.error);
         if (res.data.error === "beforeWorkTime") {
           toast.value.add({
             severity: "error",
@@ -394,17 +429,43 @@ function closeDialog(dialogName) {
   switch (dialogName) {
     case "arrHour":
       showDialogHoursIn.value = false;
+      arrivalHour.value = ''
       getData();
       break;
     case "deptHour":
       showDialogHoursOut.value = false;
+      departureHourHour.value = ''
       getData();
       break;
     case "break":
       showDialogBreak.value = false;
+      breakTimeBegin.value = '';
+      breakTimeEnd.value = '';
+      getData();
+      break;
+    case "absence":
+      showDialogAbsence.value = false;
+      selectedAbsence.value = '';
       getData();
       break;
   }
+}
+
+function saveAbsence(){
+  const url = "http://localhost:5064/api/WorkTime/addAbsence";
+  const data = new FormData();
+  data.append("userId", sessionStorage.getItem("userId"));
+  data.append("absenceId", selectedAbsence.value);
+  axios.post(url, data, {
+    headers: {
+      Authorization: `Bearer ${sessionStorage.getItem("token")}`
+    }
+  }).then(res => {
+    if (res.data.id != "") {
+      showDialogAbsence.value = false;
+    }
+  })
+
 }
 onMounted(() => {
   getData();

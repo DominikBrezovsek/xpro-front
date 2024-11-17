@@ -138,6 +138,7 @@ function loadData() {
       sessionStorage.removeItem("userId");
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("isAuthenticated");
+      sessionStorage.removeItem("workId");
       sessionStorage.setItem("redirectedToLogin", "true");
       router.push("/");
     }
@@ -146,7 +147,9 @@ function loadData() {
 
 function checkLoginStatus() {
   const isAuthenticated = sessionStorage.getItem("isAuthenticated");
+  console.log(isAuthenticated);
   const token = sessionStorage.getItem("token");
+  console.log(token);
   if (isAuthenticated !== "true" || token === undefined) {
 
     localStorage.setItem("redirectedToLogin", "true");

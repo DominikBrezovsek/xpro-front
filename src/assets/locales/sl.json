@@ -29,6 +29,7 @@
   "dashboardArrString": "Čas prihoda:",
   "dashboardDeptString": "Čas odhoda:",
   "dashboardBreakString": "Malica:",
+  "dashboardAbsentString": "Odsotnost:",
   "enterDeparture": "Vnesi uro odhoda",
   "enterArrival": "Vnesi uro prihoda",
   "enterBreak": "Vnesi čas malice",
@@ -55,5 +56,10 @@
   "breakBeforeWorkTime": "Začetek malice mora biti po prihodu",
   "breakEndAfterWorkTime": "Konec malice mora biti pred odhodom",
   "breakEndBeforeBreakStart": "Konec malice mora biti po njenem začetku",
-  "endBeforeBeginning": "Ura odhoda mora biti za uro prihoda"
+  "endBeforeBeginning": "Ura odhoda mora biti za uro prihoda",
+  "dashboardNo": "Ne",
+  "dashboardYes": "Da",
+  "noData": "Ni podatka",
+  "noAbsence": "Ni vpisane odsotnosti",
+  "addAbsence": "Označi odsotnost"
 }
