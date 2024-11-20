@@ -5,6 +5,8 @@
     <Card class="m-auto p-2">
       <template #content>
         <p class="text-xl p-2 mb-8">{{ t('settingsTitle') }}</p>
+        <p>{{t('langOptionsTitle')}}</p>
+        <Select :options="langOptions" option-value="value" option-label="label" v-model="currentLang" @change="changeLang"/>
         <div class="p-2 w-full inline-flex items-center gap-4">
           <div>
           <p class="text-lg pb-4">{{ t('settingsPassResetTitle') }}</p>
@@ -74,9 +76,9 @@
 <script setup>
 
 import Navbar from "@/components/Navbar.vue";
-import {Card, InputText, FloatLabel, Button, FileUpload, Toast} from "primevue";
+import {Card, InputText, FloatLabel, Button, FileUpload, Toast, Select} from "primevue";
 import {useI18n} from "vue-i18n";
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import axios from "axios";
 
 const {t} = useI18n();
@@ -97,6 +99,11 @@ const specialStatus = ref();
 const matchStatus = ref();
 const matchIcon = ref();
 const showPassTips = ref(false)
+const langOptions = [
+  {label: t('langOptionSl'), value: 'sl'},
+  {label: t('langOptionEn'), value: 'en'}
+]
+const currentLang = ref()
 
 function onPictureUpload(image) {
   var data = image.formData
@@ -201,4 +208,13 @@ function checkNewPass(){
   }
 
 }
+
+function changeLang() {
+  localStorage.setItem('currentLang', currentLang.value)
+  window.location.reload();
+}
+
+onMounted(() => {
+  currentLang.value = localStorage.getItem('currentLang')
+})
 </script>

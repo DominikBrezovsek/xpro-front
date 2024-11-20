@@ -28,9 +28,6 @@
             }}</label>
           <InputText id="password" type="password" class="w-full" v-model="password" v-on:keydown.enter="Login()"/>
         </FloatLabel>
-        <div class="flex items-center justify-end mb-12">
-          <a class="font-medium no-underline ml-2 text-primary text-right cursor-pointer">{{ t('forgottenPassword') }}</a>
-        </div>
 
         <Button :label="t('signIn')" icon="pi pi-arrow-right" class="w-full" icon-pos="right" @click.native="Login"/>
       </div>
@@ -146,6 +143,9 @@ function Login() {
         sessionStorage.setItem("userId", response.data.id);
         sessionStorage.setItem("isAuthenticated", "true");
         sessionStorage.setItem("token", response.data.token);
+        if (!(localStorage.getItem('currentLang'))) {
+          localStorage.setItem('currentLang', 'sl')
+        }
         router.push('/dashboard');
       }
       else {

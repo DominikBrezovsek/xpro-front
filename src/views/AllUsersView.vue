@@ -4,7 +4,7 @@
     <Navbar />
     <div class="flex-col w-full h-full p-4">
       <div class="inline-flex items-center justify-between w-full p-3" >
-        <p class="text-lg font-semibold">Seznam vseh uporabnikov</p>
+        <p class="text-lg font-semibold">{{t('allUsersTitle')}}</p>
         <Button :label="t('addUserLabel')" icon-pos="right" icon="pi pi-plus-circle" @click="openAddUser"/>
       </div>
       <DataTable class="m-auto p-3" :value="cols" size="small" v-model:editing-rows="editedRow"
@@ -14,50 +14,50 @@
           <template #paginatorstart>
             <Button type="button" icon="pi pi-refresh" @click="getData()" text />
           </template>
-        <Column field="name" header="Ime" sortable>
+        <Column field="name" :header="t('allUsersTable.nameHeader')" sortable>
           <template #editor="{data, field}">
             <InputText id="name" v-model="data['name']" placeholder="Janez" fluid />
           </template>
           <template #filter="{ filterModel, filterCallback }">
-            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po imenu" />
+            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" :placeholder="t('allUsersTable.nameFilter')" />
           </template>
         </Column>
-          <Column field="surname" header="Priimek" sortable >
+          <Column field="surname" :header="t('allUsersTable.surnameHeader')" sortable >
             <template #editor="{data, field}">
               <InputText id="surname" v-model="data['surname']" placeholder="Novak"  fluid />
             </template>
             <template #filter="{ filterModel, filterCallback }">
-              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po priimku" />
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" :placeholder="t('allUsersTable.surnameFilter')" />
             </template>
           </Column>
-          <Column field="phone" header="Telefon">
+          <Column field="phone" :header="t('allUsersTable.phoneHeader')">
             <template #editor="{data, field}">
               <InputMask id="phone" v-model="data['phone']" placeholder="(386) 12/345-678" mask="(999) 99/999-999" fluid/>
             </template>
             <template #filter="{ filterModel, filterCallback }">
-              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po tel.št" />
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" :placeholder="t('allUsersTable.phoneFilter')" />
             </template>
           </Column>
-          <Column field="email" header="E-pošta" sortable>
+          <Column field="email" :header="t('allUsersTable.emailHeader')" :sortable="true">
             <template #editor="{data, field}">
-              <InputText id="email" v-model="data['email']" placeholder="Novak" fluid/>
+              <InputText id="email" v-model="data['email']" placeholder="janez.novak@example.com" fluid/>
             </template>
             <template #filter="{ filterModel, filterCallback }">
-              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po e-pošti" />
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" :placeholder="t('allUsersTable.emailFilter')" />
             </template>
           </Column>
-        <Column field="active" header="Status">
+        <Column field="active" :header="t('allUsersTable.statusHeader')">
           <template #editor="{data, field}">
-            <Select v-model="data['active']" :options="statuses" optionLabel="name" option-value="value" placeholder="Izberi status" />
+            <Select v-model="data['active']" :options="statuses" optionLabel="name" option-value="value" :placeholder="t('allUsersTable.statusPlaceholder')" />
          </template>
           <template #filter="{ filterModel, filterCallback }">
-            <Select v-model="filterModel.value" @change="filterCallback()" :options="statuses" optionValue="value" optionLabel="name" placeholder="Izberi opcijo" style="min-width: 12rem" :showClear="true" />
+            <Select v-model="filterModel.value" @change="filterCallback()" :options="statuses" optionValue="value" optionLabel="name" :placeholder="t('allUsersTable.statusPlaceholder')" style="min-width: 12rem" :showClear="true" />
           </template>
         </Column>
-        <Column header="Uredi" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
-        <Column header="Izbriši" field="id">
+        <Column :header="t('allUsersTable.edit')" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
+        <Column :header="t('allUsersTable.delete')" field="id">
           <template #body="{data}">
-            <Button @click="deleteUser(data['id'])" label="Izbriši" />
+            <Button @click="deleteUser(data['id'])" :label="t('allUsersTable.delete')" />
           </template>
         </Column>
       </DataTable>
@@ -67,40 +67,40 @@
   <Dialog :header="t('dashboardHourOutHeaderString')" v-model:visible="showAddUser" modal>
         <span class="flex flex-col gap-6 p-5">
           <FloatLabel variant="on">
-            <label for="name">Ime</label>
+            <label for="name">{{ t('createUser.name') }}</label>
             <InputText id="name" v-model="name" />
           </FloatLabel>
           <FloatLabel variant="on">
-            <label for="surname">Priimek</label>
+            <label for="surname">{{ t('createUser.surname') }}</label>
             <InputText id="surname" v-model="surname" />
           </FloatLabel>
           <FloatLabel variant="on">
-            <label for="email">Email</label>
+            <label for="email">{{ t('createUser.email') }}</label>
             <InputText id="email" v-model="email" />
           </FloatLabel>
           <FloatLabel variant="on">
-            <label for="phone">Telefon</label>
+            <label for="phone">{{ t('createUser.phone') }}</label>
             <InputMask id="phone" v-model="phone" mask="(999) 99/999-999" />
           </FloatLabel>
           <FloatLabel variant="on">
-            <label for="position">Pozicija</label>
+            <label for="position">{{ t('createUser.position') }}</label>
             <InputText id="position" v-model="postition" />
           </FloatLabel>
           <FloatLabel variant="on">
-            <label for="position">Uporabniško ime</label>
+            <label for="position">{{ t('createUser.username') }}</label>
             <InputText id="position" v-model="username" />
           </FloatLabel>
           <FloatLabel variant="on">
-            <label for="position">Geslo</label>
+            <label for="position">{{ t('createUser.password') }}</label>
             <InputText id="position" v-model="password" type="password"/>
           </FloatLabel>
-          <Select v-model="emplType" placeholder="Vrsta zaposlitve" :options="employmentTypes" option-value="value" option-label="name"/>
+          <Select v-model="emplType" :placeholder=" t('createUser.emplType')" :options="employmentTypes" option-value="value" option-label="name"/>
           <FloatLabel variant="on" v-if="emplType==='other'">
-            <label for="emplNote">Druga vrstsa zaposlitve</label>
+            <label for="emplNote">{{ t('createUser.emplNote') }}</label>
             <InputText id="emplNote" v-model="emplNote"/>
           </FloatLabel>
-          <Select v-model="role" placeholder="Pravice" :options="roleOptions" option-value="value" option-label="name"/>
-          <Select v-model="active" placeholder="Aktiven?" :options="activeOptions" option-value="value" option-label="name"/>
+          <Select v-model="role" :placeholder="t('createUser.role')" :options="roleOptions" option-value="value" option-label="name"/>
+          <Select v-model="active" :placeholder="t('createUser.active')" :options="activeOptions" option-value="value" option-label="name"/>
         </span>
     <div class=" w-full inline-flex items-center justify-between gap-2">
       <Button :label=" t('saveLabel')" icon="pi pi-save" @click="addUser()"/>
@@ -133,7 +133,7 @@ const toast = ref('null')
 let cols = ref([]);
 const editedRow = ref([]);
 const showAddUser = ref(false);
-const statuses = [{name: "Aktiven", value: "Aktiven"}, {name: "Neaktiven", value: "Neaktiven"}]
+const statuses = [{name: t('activeOptions.active'), value: "Aktiven"}, {name: t('activeOptions.inactive'), value: "Neaktiven"}]
 const confirm = useConfirm();
 const name = ref(null);
 const surname = ref(null);
@@ -156,12 +156,12 @@ const employmentTypes = [
   {name: t('otherLabel'), value: "other"},
   ]
 const activeOptions = [
-  {name: "Aktiven", value: true},
-  {name: "Neaktiven", value: false},
+  {name: t('activeOptions.active'), value: true},
+  {name: t('activeOptions.inactive'), value: false},
 ]
 const roleOptions = [
-  {name: "Uporabnik", value: "user"},
-  {name: "Administrator", value: "admin"},
+  {name: t('roleOptions.user'), value: "user"},
+  {name: t('roleOptions.admin'), value: "admin"},
 ]
 
 const filters = ref({
@@ -273,7 +273,7 @@ function addUser() {
     toast.value.add({
       severity: "error",
       summary: t('inputError'),
-      detail: "Vsa polja so obvezna",
+      detail: t('saveOptions.emptyFields'),
       closable: true,
       life: 3000
     })
@@ -307,7 +307,7 @@ function addUser() {
     toast.value.add({
       severity: "error",
       summary: t('inputError'),
-      detail: "Vsa polja so obvezna",
+      detail: t('saveOptions.emptyFields'),
       closable: true,
       life: 3000
     })
@@ -326,7 +326,7 @@ function addUser() {
       toast.value.add({
         severity: "error",
         summary: t('inputError'),
-        detail: "Epoštni naslov je že v uporabi",
+        detail: t('saveOptions.emailExists'),
         closable: true,
         life: 3000
       })
@@ -335,7 +335,7 @@ function addUser() {
       toast.value.add({
         severity: "error",
         summary: t('inputError'),
-        detail: "Uporabniško ime je že v uporabi",
+        detail: t('saveOptions.userExists'),
         closable: true,
         life: 3000
       })

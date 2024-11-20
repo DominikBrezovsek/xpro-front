@@ -4,11 +4,11 @@
     <Navbar />
     <div class="h-full w-full flex flex-col p-2">
     <div class="inline-flex items-center justify-between">
-      <p class="font-semibold text-xl">Podatki za mesec {{monthDisplay}}</p>
+      <p class="font-semibold text-xl">{{t('selectedMonth')}} {{monthDisplay}}</p>
       <div class="inline-flex gap-5 items-center">
-        <p>Izberi mesec: </p>
+        <p>{{ t('totalHoursTable.selectMonth') }}</p>
         <DatePicker v-model="selectedMonth"  view="month" :max-date="new Date()" dateFormat="mm-yy" @dateSelect="getData()"></DatePicker>
-        <Button label="Počisti izbiro" icon-class="pi pi-times" icon-position="right" @click="clearSelectedMonth()"></Button>
+        <Button :label="t('totalHoursTable.clearSelectedMonth')" icon-class="pi pi-times" icon-position="right" @click="clearSelectedMonth()"></Button>
       </div>
     </div>
     <DataTable class="mx-auto mr-auto mt-6 p-3" :value="cols" size="small" v-model:editing-rows="editedRow"
@@ -20,34 +20,34 @@
       <template #paginatorend>
         <Button type="button" icon="pi pi-download" text  @click="exportCSV($event)"/>
       </template>
-      <Column field="date" header="Datum"></Column>
-      <Column field="clockIn" header="Čas prihoda">
+      <Column field="date" :header="t('totalHoursTable.date')"></Column>
+      <Column field="clockIn" :header="t('totalHoursTable.clockIn')">
         <template #editor="{data, field}">
           <InputMask id="clockIn" v-model="data[field]" mask="99:99" placeholder="06:30" :invalid="!data[field]" fluid />
         </template>
       </Column>
-      <Column field="clockOut" header="Čas odhoda">
+      <Column field="clockOut" :header="t('totalHoursTable.clockOut')">
         <template #editor="{data, field}">
           <InputMask id="clockOut" v-model="data[field]" mask="99:99" placeholder="06:30" :invalid="!data[field]" fluid />
         </template>
       </Column>
-      <Column field="breakStart" header="Začetek malice">
+      <Column field="breakStart" :header="t('totalHoursTable.breakStart')">
         <template #editor="{data, field}">
           <InputMask id="breakStart" v-model="data[field]" mask="99:99" placeholder="06:30" :invalid="!data[field]" fluid />
         </template>
       </Column>
-      <Column field="breakEnd" header="Konec malice">
+      <Column field="breakEnd" :header="t('totalHoursTable.breakEnd')">
         <template #editor="{data, field}">
           <InputMask id="breakEnd" v-model="data[field]" mask="99:99" placeholder="06:30" fluid />
         </template>
       </Column>
-      <Column field="breakDuration" header="Trajanje malice">
+      <Column field="breakDuration" :header="t('totalHoursTable.totalBreakTime')">
       </Column>
-      <Column field="breakOverAllowedTime" header="Prekoračen čas malice">
+      <Column field="breakOverAllowedTime" :header="t('totalHoursTable.breakOverTime')">
       </Column>
-      <Column field="totalWorkTime" header="Skupno število ur">
+      <Column field="totalWorkTime" :header="t('totalHoursTable.totalWorkTime')">
       </Column>
-      <Column field="absent" header="Odsotnost">
+      <Column field="absent" :header="t('totalHoursTable.absent')">
       </Column>
       <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
     </DataTable>
@@ -83,7 +83,7 @@ function getData(){
     month = new Date(selectedMonth.value).toISOString()
     monthDisplay = new Date(selectedMonth.value).toLocaleDateString(t('dashboardLocale'), {month: 'long', year: 'numeric'})
   }
-  exportFileName.value = "Delovne_ure_za_mesec_" + monthDisplay.split(" ").join("_");
+  exportFileName.value = t('totalHoursTable.csvExportFileName')+ monthDisplay.split(" ").join("_");
 
   const data = new FormData();
   const url = "http://localhost:5064/api/WorkTime/getUserWorkTimes";
@@ -159,7 +159,7 @@ function onRowEditSave(row) {
       toast.value.add({
         severity: "error",
         summary: t("inputError"),
-        detail: "Neveljaven vnos",
+        detail: t('inputErrors.invalidInput'),
         closable: true,
         life: 3000
       })
@@ -195,7 +195,7 @@ function onRowEditSave(row) {
       toast.value.add({
         severity: "error",
         summary: t("inputError"),
-        detail: "Neveljaven vnos",
+        detail: t('inputErrors.invalidInput'),
         closable: true,
         life: 3000
       })
@@ -241,7 +241,7 @@ function onRowEditSave(row) {
       toast.value.add({
         severity: "error",
         summary: t("inputError"),
-        detail: "Neveljaven vnos",
+        detail: t('inputErrors.invalidInput'),
         closable: true,
         life: 3000
       })
@@ -288,7 +288,7 @@ function onRowEditSave(row) {
       toast.value.add({
         severity: "error",
         summary: t("inputError"),
-        detail: "Najprej vnesi začetek malice",
+        detail: t('inputErrors.breakBeginFirst'),
         closable: true,
         life: 3000
       })
@@ -298,7 +298,7 @@ function onRowEditSave(row) {
       toast.value.add({
         severity: "error",
         summary: t("inputError"),
-        detail: "Konec malice mora biti po začetku",
+        detail: t('inputErrors.endAfterBeginning'),
         closable: true,
         life: 3000
       })
@@ -308,7 +308,7 @@ function onRowEditSave(row) {
       toast.value.add({
         severity: "error",
         summary: t("inputError"),
-        detail: "Konec malice mora biti pred koncem delovnega dneva",
+        detail: t('inputErrors.endBeforeClockOut'),
         closable: true,
         life: 3000
       })

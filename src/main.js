@@ -16,8 +16,7 @@ import ToastService from 'primevue/toastservice';
 import {Toast} from "primevue";
 import ConfirmationService from 'primevue/confirmationservice';
 
-
-let defaultLocale = 'sl';
+let defaultLocale = localStorage.getItem('currentLang') || 'sl';
 const i18n = createI18n({
     locale: defaultLocale,
     legacy: false,

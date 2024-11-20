@@ -4,30 +4,30 @@
     <Toast ref="toast" />
     <div class="flex-col w-full h-full p-4">
       <div class="inline-flex items-center justify-between w-full p-3" >
-        <p class="text-lg font-semibold">Seznam vseh odsotnosti</p>
+        <p class="text-lg font-semibold">{{t('absencesTitle')}}</p>
         <Button :label="t('addAbsenceLabel')" icon-pos="right" icon="pi pi-plus-circle" @click="addAbsenceVisible = true"/>
       </div>
       <DataTable class="m-auto p-3" :value="cols" size="small" v-model:editing-rows="editedRow"
                  edit-mode="row"  dataKey="id" @row-edit-save="onRowEditSave" show-gridlines paginator :rows="10"
                  :rows-per-page-options="[5, 10, 15, 20]" border>
-        <Column field="absenceName" header="Vrsta odsotnosti">
+        <Column field="absenceName" :header="t('absenceTable.name')">
           <template #editor="{data, field}">
-            <InputText id="absenceName" v-model="data['absenceName']" placeholder="Letni dopust" fluid />
+            <InputText id="absenceName" v-model="data['absenceName']" placeholder="t('absenceTable.placeholder')" fluid />
           </template>
         </Column>
-        <Column header="Uredi" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
-        <Column header="Izbriši" field="id">
+        <Column :header="t('absenceTable.edit')" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
+        <Column :header="t('absenceTable.delete')" field="id">
           <template #body="{data}">
-            <Button @click="deleteAbsence(data['absenceId'])" label="Izbriši" />
+            <Button @click="deleteAbsence(data['absenceId'])" :label="t('absenceTable.delete')" />
           </template>
         </Column>
       </DataTable>
     </div>
   </div>
-  <Dialog v-model:visible="addAbsenceVisible" header="Dodaj vrsto odsotnosti">
+  <Dialog v-model:visible="addAbsenceVisible" :header="t('createAbsence.header')">
     <span class="flex flex-col gap-6 p-5">
     <FloatLabel variant="on">
-      <label for="absenceName">Vrsta odsotnosti</label>
+      <label for="absenceName">{{t('createAbsence.label')}}</label>
       <InputText id="absenceName" v-model="absenceName" />
     </FloatLabel>
     </span>
@@ -74,7 +74,7 @@ function onRowEditSave(row) {
     toast.value.add({
       severity: "error",
       summary: t('saveError'),
-      detail: "Polje ne sme biti prazno",
+      detail: t('saveErrors.emptyField'),
       closable: true,
       life: 3000
     })
@@ -94,9 +94,9 @@ function onRowEditSave(row) {
 }
 function deleteAbsence(absenceId) {
   confirm.require({
-    header: t('userDeleteConfirm'),
+    header: t('absenceDeleteConfirm'),
     icon: "pi pi-question",
-    message: t('userDeleteMessage'),
+    message: t('absenceDeletedMessage'),
     acceptLabel: t('acceptLabel'),
     rejectLabel: t('cancelLabel'),
     acceptIcon: "pi pi-check-circle",
@@ -128,7 +128,7 @@ function addAbsence() {
     toast.value.add({
       severity: "error",
       summary: t('saveError'),
-      detail: "Polje ne sme biti prazno",
+      detail: t('saveErrors.emptyField'),
       closable: true,
       life: 3000
     })
