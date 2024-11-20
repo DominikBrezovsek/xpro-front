@@ -9,37 +9,50 @@
       </div>
       <DataTable class="m-auto p-3" :value="cols" size="small" v-model:editing-rows="editedRow"
                    edit-mode="row"  dataKey="id" @row-edit-save="onRowEditSave" show-gridlines paginator :rows="10"
-                   :rows-per-page-options="[5, 10, 15, 20]" border>
+                   :rows-per-page-options="[5, 10, 15, 20]" border v-model:filters="filters"
+                    filterDisplay="row" sortMode="multiple"  removableSort>
           <template #paginatorstart>
             <Button type="button" icon="pi pi-refresh" @click="getData()" text />
           </template>
-        <Column field="name" header="Ime" filter-field="name">
+        <Column field="name" header="Ime" sortable>
           <template #editor="{data, field}">
             <InputText id="name" v-model="data['name']" placeholder="Janez" fluid />
           </template>
           <template #filter="{ filterModel, filterCallback }">
-            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Search by country" />
+            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po imenu" />
           </template>
         </Column>
-          <Column field="surname" header="Priimek">
+          <Column field="surname" header="Priimek" sortable >
             <template #editor="{data, field}">
               <InputText id="surname" v-model="data['surname']" placeholder="Novak"  fluid />
+            </template>
+            <template #filter="{ filterModel, filterCallback }">
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po priimku" />
             </template>
           </Column>
           <Column field="phone" header="Telefon">
             <template #editor="{data, field}">
-              <InputText id="phone" v-model="data['phone']" placeholder="(386) 12/345-678" fluid/>
+              <InputMask id="phone" v-model="data['phone']" placeholder="(386) 12/345-678" mask="(999) 99/999-999" fluid/>
+            </template>
+            <template #filter="{ filterModel, filterCallback }">
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po tel.št" />
             </template>
           </Column>
-          <Column field="email" header="Epošta">
+          <Column field="email" header="E-pošta" sortable>
             <template #editor="{data, field}">
               <InputText id="email" v-model="data['email']" placeholder="Novak" fluid/>
+            </template>
+            <template #filter="{ filterModel, filterCallback }">
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Išči po e-pošti" />
             </template>
           </Column>
         <Column field="active" header="Status">
           <template #editor="{data, field}">
             <Select v-model="data['active']" :options="statuses" optionLabel="name" option-value="value" placeholder="Izberi status" />
          </template>
+          <template #filter="{ filterModel, filterCallback }">
+            <Select v-model="filterModel.value" @change="filterCallback()" :options="statuses" optionValue="value" optionLabel="name" placeholder="Izberi opcijo" style="min-width: 12rem" :showClear="true" />
+          </template>
         </Column>
         <Column header="Uredi" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
         <Column header="Izbriši" field="id">
@@ -67,7 +80,7 @@
           </FloatLabel>
           <FloatLabel variant="on">
             <label for="phone">Telefon</label>
-            <InputText id="phone" v-model="phone" />
+            <InputMask id="phone" v-model="phone" mask="(999) 99/999-999" />
           </FloatLabel>
           <FloatLabel variant="on">
             <label for="position">Pozicija</label>
@@ -79,7 +92,7 @@
           </FloatLabel>
           <FloatLabel variant="on">
             <label for="position">Geslo</label>
-            <InputText id="position" v-model="password" />
+            <InputText id="position" v-model="password" type="password"/>
           </FloatLabel>
           <Select v-model="emplType" placeholder="Vrsta zaposlitve" :options="employmentTypes" option-value="value" option-label="name"/>
           <FloatLabel variant="on" v-if="emplType==='other'">
@@ -105,6 +118,7 @@ import {
   Column,
   Button,
   InputText,
+  InputMask,
   Select,
   useConfirm,
   Dialog,
@@ -113,7 +127,7 @@ import {
 import {computed, onMounted, ref} from "vue";
 import {useI18n} from "vue-i18n";
 import axios from "axios";
-
+import { FilterMatchMode } from '@primevue/core/api';
 const {t} = useI18n()
 const toast = ref('null')
 let cols = ref([]);
@@ -121,7 +135,6 @@ const editedRow = ref([]);
 const showAddUser = ref(false);
 const statuses = [{name: "Aktiven", value: "Aktiven"}, {name: "Neaktiven", value: "Neaktiven"}]
 const confirm = useConfirm();
-const filters = ref({ name: "" });
 const name = ref(null);
 const surname = ref(null);
 const email = ref(null);
@@ -150,6 +163,15 @@ const roleOptions = [
   {name: "Uporabnik", value: "user"},
   {name: "Administrator", value: "admin"},
 ]
+
+const filters = ref({
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+      surname: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+      phone: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      email: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+      active: { value: "Aktiven", matchMode: FilterMatchMode.EQUALS}
+    })
 
 function onRowEditSave(row){
   var userId = row.newData['id']
@@ -299,9 +321,29 @@ function addUser() {
 
   axios.post(url, data, {
     headers: {Authorization: 'Bearer ' + sessionStorage.getItem('token')}
-  }).then(() => {
-    getData()
-    showAddUser.value = false
+  }).then(res => {
+    if (res.data.error === "emailExists") {
+      toast.value.add({
+        severity: "error",
+        summary: t('inputError'),
+        detail: "Epoštni naslov je že v uporabi",
+        closable: true,
+        life: 3000
+      })
+      showAddUser.value = true
+    } else if(res.data.error === "usernameExists"){
+      toast.value.add({
+        severity: "error",
+        summary: t('inputError'),
+        detail: "Uporabniško ime je že v uporabi",
+        closable: true,
+        life: 3000
+      })
+      showAddUser.value = true
+    } else {
+      getData()
+      showAddUser.value = false
+    }
   })
 }
 onMounted(() => {

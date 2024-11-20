@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screenflex flex-col justify-between">
+  <div class="h-screen flex flex-col justify-between">
     <ConfirmDialog></ConfirmDialog>
     <Menu :model="userItems" mode="vertical" class="md:w-60 h-screen flex flex-col justify-between pt-5 pb-5">
       <template #start>
@@ -101,15 +101,21 @@ let userItems = [
     role: "admin"
   },
   {
-    label: t('navbarSettingsLabel'),
-    icon: "pi pi-cog",
-    route: "/settings",
-    role: "admin"
-  },
-  {
     label: t('navbarEditUsersLabel'),
     icon: "pi pi-users",
     route: "/users",
+    role: "admin"
+  },
+  {
+    label: t('navbarEditAbsencesLabel'),
+    icon: "pi pi-calendar-minus",
+    route: "/absences",
+    role: "admin"
+  },
+  {
+    label: t('navbarSettingsLabel'),
+    icon: "pi pi-cog",
+    route: "/settings",
     role: "admin"
   },
   {

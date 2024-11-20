@@ -7,18 +7,18 @@
       <p class="font-semibold text-xl">Podatki za mesec {{monthDisplay}}</p>
       <div class="inline-flex gap-5 items-center">
         <p>Izberi mesec: </p>
-        <DatePicker v-model="selectedMonth" select-other-months view="month"  dateFormat="mm/yy" @dateSelect="getData()"></DatePicker>
+        <DatePicker v-model="selectedMonth"  view="month" :max-date="new Date()" dateFormat="mm-yy" @dateSelect="getData()"></DatePicker>
         <Button label="Počisti izbiro" icon-class="pi pi-times" icon-position="right" @click="clearSelectedMonth()"></Button>
       </div>
     </div>
     <DataTable class="mx-auto mr-auto mt-6 p-3" :value="cols" size="small" v-model:editing-rows="editedRow"
                edit-mode="row"  dataKey="id" @row-edit-save="onRowEditSave" show-gridlines paginator :rows="10"
-               :rows-per-page-options="[5, 10, 15, 20]" border>
+               :rows-per-page-options="[5, 10, 15, 20]" border ref="dataTable" :export-filename="exportFileName">
       <template #paginatorstart>
         <Button type="button" icon="pi pi-refresh" @click="getData()" text />
       </template>
       <template #paginatorend>
-        <Button type="button" icon="pi pi-download" text/>
+        <Button type="button" icon="pi pi-download" text  @click="exportCSV($event)"/>
       </template>
       <Column field="date" header="Datum"></Column>
       <Column field="clockIn" header="Čas prihoda">
@@ -67,10 +67,15 @@ const {t} = useI18n();
 const toast = ref(null)
 
 let cols = ref([]);
+const dataTable = ref();
 var monthDisplay = new Date().toLocaleDateString(t('dashboardLocale'), {month: 'long', year: 'numeric'})
 const selectedMonth = ref('');
 const editedRow = ref([]);
 const invalidInput = ref(false)
+const exportFileName = ref('')
+const exportCSV = () => {
+  dataTable.value.exportCSV();
+};
 
 function getData(){
   var month = ""
@@ -78,6 +83,7 @@ function getData(){
     month = new Date(selectedMonth.value).toISOString()
     monthDisplay = new Date(selectedMonth.value).toLocaleDateString(t('dashboardLocale'), {month: 'long', year: 'numeric'})
   }
+  exportFileName.value = "Delovne_ure_za_mesec_" + monthDisplay.split(" ").join("_");
 
   const data = new FormData();
   const url = "http://localhost:5064/api/WorkTime/getUserWorkTimes";
@@ -345,7 +351,6 @@ function onRowEditSave(row) {
     }
   })
 }
-
 onMounted(() => {
   getData();
 })

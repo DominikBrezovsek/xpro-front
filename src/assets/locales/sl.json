@@ -295,5 +295,8 @@
     "studentLabel": "Študent",
     "authorLabel": "Avtorska",
     "SPLabel": "S.P",
-    "otherLabel": "Drugo"
+    "otherLabel": "Drugo",
+    "navbarEditAbsencesLabel": "Vrste odsotnosti",
+    "addAbsenceLabel": "Dodaj vrsto odsotnosti",
+    "absenceDeleted": "Odsotnost odstranjena"
 }
