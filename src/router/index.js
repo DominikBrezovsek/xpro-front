@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import {computed} from "vue";
-const isAuthenticated =  sessionStorage.getItem('isAuthenticated');
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -27,11 +26,17 @@ const router = createRouter({
       path: '/settings',
       name: 'Settings',
       component: () => import('../views/SettingsView.vue'),
+    },
+    {
+      path: '/users',
+      name: 'AllUsers',
+      component: () => import ('../views/AllUsersView.vue'),
     }
   ],
 })
 router.beforeEach((to, from, next) => {
-  if (isAuthenticated !== "true" && to.name !== "Login" && from.name !== "Login") {
+  const isAuthenticated =  sessionStorage.getItem('isAuthenticated');
+  if (isAuthenticated != "true" && to.name !== "Login" && from.name !== "Login") {
     sessionStorage.setItem('redirectedToLogin', "true");
     return next({name: "Login"}, {message: "notLoggedIn"});
   }

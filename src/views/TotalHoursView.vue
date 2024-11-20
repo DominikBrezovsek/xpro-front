@@ -1,5 +1,6 @@
 <template>
   <div class="inline-flex h-screen w-screen">
+    <Toast ref="toast" />
     <Navbar />
     <div class="h-full w-full flex flex-col p-2">
     <div class="inline-flex items-center justify-between">
@@ -21,39 +22,23 @@
       </template>
       <Column field="date" header="Datum"></Column>
       <Column field="clockIn" header="Čas prihoda">
-        <template #editor="{ data, field }">
-          <DatePicker
-              v-model="data[field]"
-              timeOnly
-              hourFormat="24"
-          />
+        <template #editor="{data, field}">
+          <InputMask id="clockIn" v-model="data[field]" mask="99:99" placeholder="06:30" :invalid="!data[field]" fluid />
         </template>
       </Column>
       <Column field="clockOut" header="Čas odhoda">
-        <template #editor="{ data, field }">
-          <DatePicker
-              v-model="data[field]"
-              timeOnly
-              hourFormat="24"
-          />
+        <template #editor="{data, field}">
+          <InputMask id="clockOut" v-model="data[field]" mask="99:99" placeholder="06:30" :invalid="!data[field]" fluid />
         </template>
       </Column>
       <Column field="breakStart" header="Začetek malice">
-        <template #editor="{ data, field }">
-          <DatePicker
-              v-model="data[field]"
-              timeOnly
-              hourFormat="24"
-          />
+        <template #editor="{data, field}">
+          <InputMask id="breakStart" v-model="data[field]" mask="99:99" placeholder="06:30" :invalid="!data[field]" fluid />
         </template>
       </Column>
       <Column field="breakEnd" header="Konec malice">
-        <template #editor="{ data, field }">
-          <DatePicker
-              v-model="data[field]"
-              timeOnly
-              hourFormat="24"
-          />
+        <template #editor="{data, field}">
+          <InputMask id="breakEnd" v-model="data[field]" mask="99:99" placeholder="06:30" fluid />
         </template>
       </Column>
       <Column field="breakDuration" header="Trajanje malice">
@@ -76,14 +61,16 @@
 import Navbar from "@/components/Navbar.vue";
 import axios from "axios";
 import {onMounted, ref} from "vue";
-import {DataTable, Column, DatePicker, Button, InputText} from "primevue";
+import {DataTable, Column, DatePicker, Button, InputMask, Toast} from "primevue";
 import {useI18n} from "vue-i18n";
 const {t} = useI18n();
+const toast = ref(null)
 
 let cols = ref([]);
 var monthDisplay = new Date().toLocaleDateString(t('dashboardLocale'), {month: 'long', year: 'numeric'})
 const selectedMonth = ref('');
 const editedRow = ref([]);
+const invalidInput = ref(false)
 
 function getData(){
   var month = ""
@@ -119,6 +106,27 @@ function getData(){
             if (res.data[i].breakOverAllowedTime === "00:00:00") {
               res.data[i].breakOverAllowedTime = "/";
             }
+            if (res.data[i].clockIn) {
+              res.data[i].clockIn = res.data[i].clockIn.substring(0, res.data[i].clockIn.lastIndexOf(':'))
+            } else {
+              res.data[i].clockIn = "/"
+            }
+            if (res.data[i].clockOut) {
+              res.data[i].clockOut = res.data[i].clockOut.substring(0, res.data[i].clockOut.lastIndexOf(':'))
+            } else {
+              res.data[i].clockOut = "/"
+            }
+            if (res.data[i].breakStart) {
+              res.data[i].breakStart = res.data[i].breakStart.substring(0, res.data[i].breakStart.lastIndexOf(':'))
+            } else {
+              res.data[i].breakStart = "/"
+            }
+            if (res.data[i].breakEnd) {
+              res.data[i].breakEnd = res.data[i].breakEnd.substring(0, res.data[i].breakEnd.lastIndexOf(':'))
+            } else {
+              res.data[i].breakEnd = "/"
+            }
+
             cols.value.push(res.data[i]);
           }
         }
@@ -134,50 +142,208 @@ function onRowEditSave(row) {
   const date = new Date().toISOString();
   const workId = row.newData.id;
   const data = new FormData();
-  var clockIn, clockOut, breakStart, breakEnd;
-  if(typeof(row.newData.clockIn) == "object") {
-    clockIn = new Date(row.newData.clockIn).toISOString();
-    clockIn = clockIn.substring(0, clockIn.lastIndexOf(':')+1) + "00.000Z";
-
+  var clockInTime, clockOutTime, breakStartTime, breakEndTime;
+  const validHour = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
+  clockInTime = row.newData['clockIn']
+  clockOutTime = row.newData['clockOut']
+  breakStartTime = row.newData['breakStart']
+  breakEndTime = row.newData['breakEnd']
+  if (clockInTime != "/") {
+    if (clockInTime.length < 5) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: "Neveljaven vnos",
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    if (validHour.test(clockInTime)) {
+      clockInTime = date.substring(0, date.indexOf('T')+1) + clockInTime + ":00.000"
+    } else {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("invalidFormat"),
+        closable: true,
+        life: 3000
+      })
+      return
+    }
   } else {
-    clockIn = date.substring(0, date.indexOf('T')+1) + row.newData.clockIn + ".000";
+    clockInTime = "/"
   }
-  if(typeof(row.newData.clockOut) == "object") {
-    clockOut = new Date(row.newData.clockOut).toISOString();
-    clockOut = clockOut.substring(0, clockOut.lastIndexOf(':')+1) + "00.000Z";
-
+  if (clockOutTime != "/") {
+    if (clockInTime === "/") {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("departureBeforeArrival"),
+        closable: true,
+        life: 3000
+      })
+      return
+    }
+    if (clockOutTime.length < 5) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: "Neveljaven vnos",
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    if ((parseInt(clockOutTime.split(":").join("")) < parseInt(row.newData['clockIn'].split(":").join("")))) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("deptTooSmall"),
+        closable: true,
+        life: 3000
+      })
+      return
+    }
+    if (validHour.test(clockOutTime)) {
+      clockOutTime = date.substring(0, date.indexOf('T')+1) + clockOutTime + ":00.000"
+    } else {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("invalidFormat"),
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
   } else {
-    clockOut = date.substring(0, date.indexOf('T')+1) + row.newData.clockOut + ".000";
+    clockOutTime = "/"
   }
-  if (typeof(row.newData.breakStart) == "object") {
-    breakStart = new Date(row.newData.breakStart).toISOString();
-    breakStart = breakStart.substring(0, breakStart.lastIndexOf(':')+1) + "00.000Z";
-
+  if (breakStartTime != "/") {
+    if (clockInTime == "/") {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("departureBeforeArrival"),
+        closable: true,
+        life: 3000
+      })
+      return
+    }
+    if (breakStartTime.length < 5) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: "Neveljaven vnos",
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    if (!(parseInt(row.newData['clockIn'].split(":").join("")) < parseInt(row.newData['breakStart'].split(":").join("")))) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("breakBeforeWorkTime"),
+        closable: true,
+        life: 3000
+      })
+      return
+    }
+    if (clockOutTime != "/") {
+      if (!(parseInt(row.newData['clockIn'].split(":").join("")) < parseInt(row.newData['breakStart'].split(":").join("")))) {
+        toast.value.add({
+          severity: "error",
+          summary: t("inputError"),
+          detail: t("breakAfterWorkTime"),
+          closable: true,
+          life: 3000
+        })
+        return
+      }
+    }
+    if (!validHour.test(breakStartTime)) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("invalidFormat"),
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    breakStartTime = date.substring(0, date.indexOf('T')+1) + breakStartTime + ":00.000"
   } else {
-    breakStart = date.substring(0, date.indexOf('T')+1) + row.newData.breakStart + ".000";
-
+    breakStartTime = "/"
   }
-  if (typeof(row.newData.breakEnd) == "object") {
-    breakEnd = new Date(row.newData.breakEnd).toISOString();
-    breakEnd = breakEnd.substring(0, breakEnd.lastIndexOf(':')+1) + "00.000Z";
-
+  if (breakEndTime !== "/") {
+    if (breakStartTime === "/") {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: "Najprej vnesi začetek malice",
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    if (!(parseInt(row.newData['breakEnd'].split(":").join("")) > parseInt(row.newData['breakStart'].split(":").join("")))) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: "Konec malice mora biti po začetku",
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    if (!(parseInt(row.newData['clockOut'].split(":").join("")) > parseInt(row.newData['breakEnd'].split(":").join("")))) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: "Konec malice mora biti pred koncem delovnega dneva",
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    if (!validHour.test(breakEndTime)) {
+      toast.value.add({
+        severity: "error",
+        summary: t("inputError"),
+        detail: t("invalidFormat"),
+        closable: true,
+        life: 3000
+      })
+      return;
+    }
+    breakEndTime = date.substring(0, date.indexOf('T')+1) + breakEndTime + ":00.000"
   } else {
-    breakEnd =  date.substring(0, date.indexOf('T')+1) + row.newData.breakEnd + ".000";
+    breakEndTime = "/"
   }
   data.append("workId", workId);
-  data.append("clockInTime", clockIn);
-  data.append("clockOutTime", clockOut);
-  data.append("breakStartTime", breakStart);
-  data.append("breakEndTime", breakEnd);
+  data.append("clockInTime", clockInTime);
+  data.append("clockOutTime", clockOutTime);
+  data.append("breakStartTime", breakStartTime);
+  data.append("breakEndTime", breakEndTime);
   const url =  "http://localhost:5064/api/WorkTime/updateUserWorkTimes";
   axios.post(url, data,  {
     headers: {
       'Authorization': 'Bearer ' + sessionStorage.getItem('token'),
     }
-  }).then(() => {
+  }).then(res => {
     getData()
+    if (res.data.error == "userWasAbsent") {
+      toast.value.add({
+        severity: "info",
+        summary: t("inputError"),
+        detail: t("userWasAbsent"),
+        closable: true,
+        life: 3000
+      })
+    }
   })
-
 }
 
 onMounted(() => {

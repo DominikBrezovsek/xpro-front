@@ -88,6 +88,7 @@ app.use(PrimeVue, {
             darkModeSelector: '.darkMode',
         },
     },
+    locale: sl
 });
 app.use(ToastService);
 app.use(i18n);

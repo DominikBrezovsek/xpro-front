@@ -1,7 +1,7 @@
 <template>
   <div class="h-screenflex flex-col justify-between">
     <ConfirmDialog></ConfirmDialog>
-    <Menu :model="items" mode="vertical" class="md:w-60 h-screen flex flex-col justify-between pt-5 pb-5">
+    <Menu :model="userItems" mode="vertical" class="md:w-60 h-screen flex flex-col justify-between pt-5 pb-5">
       <template #start>
         <span class="inline-flex items-center gap-1 px-2 py-2">
           <svg width="35" height="40" viewBox="0 0 35 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-8">
@@ -16,7 +16,7 @@
         </span>
       </template>
       <template #item="{ item, props }">
-        <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+        <router-link v-if="item.role == userRole" v-slot="{ href, navigate }" :to="item.route" custom>
           <a v-bind="props.action" @click="confirmAction(item.label)" aria-hidden="false">
             <span :class="item.icon"/>
             <span class="ml-2">{{ item.label }}</span>
@@ -24,9 +24,8 @@
         </router-link>
       </template>
       <template #end>
-        <span class="relative overflow-hidden w-full border-0 bg-transparent flex items-center p-2 pl-4 gap-1">
-          <Avatar image="https://seccdn.libravatar.org/avatar/296caabbe9e8c950a0143257243da6ed?s=512&d=retro"
-                  size="large" shape="square"/>
+        <span class="relative overflow-hidden w-full border-0 bg-transparent flex flex-col items-center p-2 pl-4 gap-1">
+          <Avatar :image="profileImage" shape="circle" size="xlarge"/>
         <span class="relative overflow-hidden w-full border-0 bg-transparent flex  flex-col items-start p-2 pl-4 gap-1">
           <span>{{ t('navbarLoggedInAs') }}</span>
           <span class="inline-flex items-center gap-2">
@@ -61,29 +60,64 @@ const confirm = useConfirm();
 const lightMode = ref('secondary');
 const darkMode = ref('secondary');
 const system = ref('primary');
+const profileImage = ref();
+const userRole = ref();
 
-let items = [
+let userItems = [
   {
     label: t('navbarCurrentDayLabel'),
     icon: "pi pi-clock",
-    route: "/dashboard"
-
+    route: "/dashboard",
+    role: "user"
   },
   {
     label: t('navbarMyHoursLabel'),
     icon: "pi pi-calendar",
-    route: "/my-hours"
+    route: "/my-hours",
+    role: "user"
   },
   {
     label: t('navbarSettingsLabel'),
     icon: "pi pi-cog",
-    route: "/settings"
+    route: "/settings",
+    role: "user"
   },
   {
     label: t('navbarLogoutLabel'),
     icon: "pi pi-sign-out",
-    route: "/"
-  }
+    route: "/",
+    role: "user"
+  },
+  {
+    label: t('navbarCurrentDayLabel'),
+    icon: "pi pi-clock",
+    route: "/dashboard",
+    role: "admin"
+  },
+  {
+    label: t('navbarMyHoursLabel'),
+    icon: "pi pi-calendar",
+    route: "/my-hours",
+    role: "admin"
+  },
+  {
+    label: t('navbarSettingsLabel'),
+    icon: "pi pi-cog",
+    route: "/settings",
+    role: "admin"
+  },
+  {
+    label: t('navbarEditUsersLabel'),
+    icon: "pi pi-users",
+    route: "/users",
+    role: "admin"
+  },
+  {
+    label: t('navbarLogoutLabel'),
+    icon: "pi pi-sign-out",
+    route: "/",
+    role: "admin"
+  },
 ]
 
 function confirmAction(label) {
@@ -111,7 +145,7 @@ function confirmAction(label) {
       },
     });
   } else {
-    const item = items.find(item => item.label === label);
+    const item = userItems.find(item => item.label === label);
     if (item && item.route) {
       router.push(item.route);
     }
@@ -133,8 +167,14 @@ function loadData() {
   ).then((response) => {
     name.value = response.data.name;
     surname.value = response.data.surname;
+    if (response.data.profileImage) {
+      profileImage.value = `data:image/*;base64,${response.data.profileImage}`
+    }  else {
+      profileImage.value = "https://seccdn.libravatar.org/avatar/40f8d096a3777232204cb3f796c577b7?d=retro&f=y"
+    }
+    userRole.value = response.data.role
   }).catch((error) => {
-    if (error.status === 401) {
+    if (error.status === 401 && error.response) {
       sessionStorage.removeItem("userId");
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("isAuthenticated");
@@ -147,9 +187,7 @@ function loadData() {
 
 function checkLoginStatus() {
   const isAuthenticated = sessionStorage.getItem("isAuthenticated");
-  console.log(isAuthenticated);
   const token = sessionStorage.getItem("token");
-  console.log(token);
   if (isAuthenticated !== "true" || token === undefined) {
 
     localStorage.setItem("redirectedToLogin", "true");
@@ -218,10 +256,10 @@ function loadMode() {
   }
 }
 
+
 onMounted(() => {
-  if (checkLoginStatus()) {
+  checkLoginStatus();
     loadMode();
     loadData();
-  }
 });
 </script>

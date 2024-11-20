@@ -45,7 +45,7 @@
 
 <script setup>
 import {InputText, Button, Checkbox, FloatLabel, Toast, useToast} from "primevue";
-import {onMounted, ref} from 'vue';
+import {onBeforeMount, onMounted, ref} from 'vue';
 import {useI18n} from 'vue-i18n'
 import axios from "axios";
 import router from "@/router/index.js";
@@ -78,6 +78,9 @@ function changeMode(mode) {
 
 function loadMode() {
   const mode = localStorage.getItem("colorMode");
+  if (mode === null) {
+    localStorage.setItem("colorMode", "system");
+  }
   switch (mode) {
     case "dark":
       darkMode.value = "primary";
@@ -182,4 +185,13 @@ onMounted(() => {
   sessionStorage.removeItem("isAuthenticated");
   sessionStorage.removeItem("token");
 });
+
+onBeforeMount(() => {
+  const mode = localStorage.getItem("colorMode") || "system";
+  if (mode === "dark" || (mode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    document.documentElement.classList.add("darkMode");
+  } else {
+    document.documentElement.classList.remove("darkMode");
+  }
+})
 </script>

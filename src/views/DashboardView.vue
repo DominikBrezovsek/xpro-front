@@ -2,7 +2,7 @@
   <div class="inline-flex h-screen w-screen">
     <Toast ref="toast"/>
     <Navbar/>
-    <Card class="m-auto w-4/12 h-2/5 colo">
+    <Card class="m-auto ">
       <template #content>
         <div class="p-card-title text-xl mb-2">
           <p>{{t('dashboardWorkDay')}} {{date}}</p>
@@ -179,7 +179,6 @@ function getData(){
       for (var i = 0; i < response.data.length; i++) {
         absences.value.push(response.data[i]);
       }
-      console.log(absences.value[0].absenceId)
     }
   })
 }
@@ -195,7 +194,15 @@ function showDialog(dialogName) {
           closable: true,
           life: 3000
         })
-      } else {
+      }else if(absenceType.value){
+        toast.value.add({
+          severity: "info",
+          summary: t("actionNotAvailable"),
+          detail: t("userAlreadyAbsent"),
+          closable: true,
+          life: 3000
+        })
+      }else {
         showDialogHoursIn.value = true;
       }
       break;
@@ -217,6 +224,14 @@ function showDialog(dialogName) {
           life: 3000
         })
         showDialogHoursOut.value = false;
+      }else if(absenceType.value) {
+        toast.value.add({
+          severity: "info",
+          summary: t("actionNotAvailable"),
+          detail: t("userAlreadyAbsent"),
+          closable: true,
+          life: 3000
+        })
       } else {
         showDialogHoursOut.value = true;
       }
@@ -239,13 +254,40 @@ function showDialog(dialogName) {
           life: 3000
         })
         showDialogBreak.value = false;
-      } else {
+      } else if(absenceType.value) {
+        toast.value.add({
+          severity: "info",
+          summary: t("actionNotAvailable"),
+          detail: t("userAlreadyAbsent"),
+          closable: true,
+          life: 3000
+        })
+      }
+      else {
 
         showDialogBreak.value = true;
       }
       break;
       case "absence":
-        showDialogAbsence.value = true;
+        if(arrHour.value || deptHour.value || breakDuration.value) {
+          toast.value.add({
+            severity: "info",
+            summary: t("actionNotAvailable"),
+            detail: t("userAlreadyWorking"),
+            closable: true,
+            life: 3000
+          })
+      } else if(absenceType.value) {
+          toast.value.add({
+            severity: "info",
+            summary: t("actionNotAvailable"),
+            detail: t("absenceAlreadyExists"),
+            closable: true,
+            life: 3000
+          })
+        } else {
+          showDialogAbsence.value = true;
+        }
   }
 }
 
@@ -463,8 +505,24 @@ function saveAbsence(){
   }).then(res => {
     if (res.data.id != "") {
       showDialogAbsence.value = false;
+      toast.value.add({
+        severity: "success",
+        summary: t("saveSuccess"),
+        detail: t("saveAbsenceSuccess"),
+        closable: true,
+        life: 3000
+      })
+    } else {
+      toast.value.add({
+        severity: "error",
+        summary: t("saveError"),
+        detail: t("saveAbsenceFailure"),
+        closable: true,
+        life: 3000
+      })
     }
   })
+  getData();
 
 }
 onMounted(() => {
